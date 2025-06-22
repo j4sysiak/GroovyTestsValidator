@@ -1,10 +1,11 @@
 package com.example.satellite
 
-import com.example.satellite.model.TelemetryData
-import com.example.satellite.service.TelemetryValidator
 import com.example.satellite.model.SatelliteStatus
+import com.example.satellite.model.TelemetryData
+import com.example.satellite.model.ValidationResult
+import com.example.satellite.service.TelemetryValidator
 
-// G??wna klasa aplikacji, kt?ra symuluje dzia?anie systemu.
+// Gl?wna klasa aplikacji, kt?ra symuluje dzialanie systemu.
 class SatelliteControlCenter {
 
     static void main(String[] args) {
@@ -42,12 +43,12 @@ class SatelliteControlCenter {
         )
 
         def offlineData = new TelemetryData(
-        satelliteId: 'SAT-004',
-        timestamp: now,
-        altitudeKm: 600.0,
-        temperatureCelsius: 20.0,
-        signalStrengthDBm: -70.0,
-        status: SatelliteStatus.OFFLINE // <-- Ten powinien zosta? odrzucony!
+                satelliteId: 'SAT-004',
+                timestamp: now,
+                altitudeKm: 600.0,
+                temperatureCelsius: 20.0,
+                signalStrengthDBm: -70.0,
+                status: SatelliteStatus.OFFLINE // <-- Ten powinien zosta? odrzucony!
         )
         
         def packetsToProcess = [validData, oldData, failingData, offlineData]
