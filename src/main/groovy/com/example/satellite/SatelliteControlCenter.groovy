@@ -53,7 +53,8 @@ class SatelliteControlCenter {
         
         def packetsToProcess = [validData, oldData, failingData, offlineData]
 
-        // Przetwarzanie danych
+        /*
+        // Przetwarzanie danych - 1
         println "\n--- Processing all data packets ---"
         packetsToProcess.each { data ->
             println "\nProcessing data for: ${data.satelliteId}"
@@ -69,5 +70,43 @@ class SatelliteControlCenter {
             }
         }
         println "\n--- Processing Complete ---"
+        */
+
+        // Przetwarzanie danych - 2
+        println "\n--- Processing all data packets ---"
+        // U?ywamy metody .collect(), aby przetworzy? ka?dy element i zebra? wyniki do nowej listy
+        def validationResults = packetsToProcess.collect { data ->
+            println "Processing data for: ${data.satelliteId}"
+            return validator.validate(data) // Zwracamy wynik walidacji
+        }
+        println "--- Processing Complete ---"
+
+
+        // --- NOWY KOD: Generowanie raportu ---
+        println "\n--- Validation Report ---"
+        // U?ywamy metody .count() z domkni?ciem, aby policzy? elementy spe?niaj?ce warunek
+        def acceptedCount = validationResults.count { it.valid }
+        def rejectedCount = validationResults.count { !it.valid }
+
+        println "Total packets processed: ${packetsToProcess.size()}"
+        println "Accepted packets: $acceptedCount"
+        println "Rejected packets: $rejectedCount"
+
+        // Teraz zbierzmy wszystkie powody odrzucenia
+        // 1. .findAll() - filtruje list?, zostawiaj?c tylko odrzucone wyniki
+        // 2. .collectMany() - bierze ka?dy odrzucony wynik i wyci?ga z niego list? powod?w, a nast?pnie sp?aszcza wszystko do jednej, du?ej listy
+        // 3. .unique() - usuwa duplikaty
+        def allFailureReasons = validationResults
+                .findAll { !it.valid }
+                .collectMany { it.failureReasons }
+                .unique()
+
+        if (allFailureReasons) { // Sprawdza, czy lista nie jest pusta
+            println "\nUnique failure reasons found:"
+            allFailureReasons.each { reason ->
+                println " - $reason"
+            }
+        }
+        println "\n--- End of Report ---"
     }
 }
