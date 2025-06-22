@@ -12,6 +12,9 @@ class TelemetryValidatorTest extends Specification {
 
     def validator = new TelemetryValidator()
 
+
+
+    /*test-1*/
     def "should pass validation for a perfect data packet"() {
         given: "a valid telemetry data packet"
         def validData = new TelemetryData(
@@ -30,7 +33,10 @@ class TelemetryValidatorTest extends Specification {
         result.failureReasons.empty
     }
 
-    @Unroll // Ta adnotacja sprawi, ďż˝e kaďż˝dy wiersz z 'where' bďż˝dzie osobnym testem
+
+
+    /*test-2*/
+    @Unroll // Ta adnotacja sprawi, że każdy wiersz z 'where' będzie osobnym testem
     def "should fail validation for #reason"() {
         given: "a telemetry data packet with an invalid value"
         def data = new TelemetryData(
@@ -57,17 +63,18 @@ class TelemetryValidatorTest extends Specification {
         "temperature too high"       | System.currentTimeMillis()           | 500      | 110         | -80            | SatelliteStatus.ONLINE   | "Temperature is out of safe range"
         "signal strength too low"    | System.currentTimeMillis()           | 500      | 25          | -100           | SatelliteStatus.ONLINE   | "Signal strength is too low"
         "satellite is offline"       | System.currentTimeMillis()           | 500      | 25          | -80            | SatelliteStatus.OFFLINE  | "Satellite is not in ONLINE status"
-
     }
 
+
+    /*test-3*/
     def "should collect all failure reasons for a multi-failure packet"() {
         given: "a data packet with multiple issues"
         def badData = new TelemetryData(
                 timestamp: System.currentTimeMillis() - 400000, // stary
                 altitudeKm: 100, // za nisko
                 temperatureCelsius: 25,
-                signalStrengthDBm: -100, // za sďż˝aby sygnaďż˝
-                status: com.example.satellite.model.SatelliteStatus.ONLINE // <-- BRAKUJďż˝CA LINIA!
+                signalStrengthDBm: -100, // za slaby sygnal˝
+                status: com.example.satellite.model.SatelliteStatus.ONLINE
         )
 
         when: "the data is validated"
