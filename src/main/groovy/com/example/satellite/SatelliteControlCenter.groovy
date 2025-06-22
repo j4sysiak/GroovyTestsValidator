@@ -52,13 +52,13 @@ class SatelliteControlCenter {
         )
         
         def packetsToProcess = [validData, oldData, failingData, offlineData]
-        
+
         // Przetwarzanie danych
         println "\n--- Processing all data packets ---"
         packetsToProcess.each { data ->
             println "\nProcessing data for: ${data.satelliteId}"
             def result = validator.validate(data)
-            
+
             if (result.valid) {
                 println "--> VALIDATION PASSED. Data accepted."
             } else {

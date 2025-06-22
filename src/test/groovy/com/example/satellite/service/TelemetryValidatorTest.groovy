@@ -5,9 +5,8 @@ import spock.lang.Specification
 import spock.lang.Unroll
 import com.example.satellite.model.SatelliteStatus
 
-
-// Kompleksowy test dla walidatora napisany w Spocku. 
-// Wykorzystuje potďż˝ny blok where: do testowania wielu przypadkďż˝w naraz.
+// Kompleksowy test dla walidatora napisany w Spocku.
+// Wykorzystuje potężny blok where: do testowania wielu przypadków naraz.
 
 class TelemetryValidatorTest extends Specification {
 
@@ -20,7 +19,7 @@ class TelemetryValidatorTest extends Specification {
                 altitudeKm: 500,
                 temperatureCelsius: 25,
                 signalStrengthDBm: -80,
-                status: com.example.satellite.model.SatelliteStatus.ONLINE // <-- BRAKUJďż˝CA LINIA!
+                status: com.example.satellite.model.SatelliteStatus.ONLINE
         )
 
         when: "the data is validated"
@@ -39,7 +38,7 @@ class TelemetryValidatorTest extends Specification {
                 altitudeKm: altitude,
                 temperatureCelsius: temperature,
                 signalStrengthDBm: signalStrength,
-                status: status // <-- DODANA LINIA
+                status: status
         )
 
         when: "the data is validated"
@@ -57,7 +56,7 @@ class TelemetryValidatorTest extends Specification {
         "temperature too low"        | System.currentTimeMillis()           | 500      | -60         | -80            | SatelliteStatus.ONLINE   | "Temperature is out of safe range"
         "temperature too high"       | System.currentTimeMillis()           | 500      | 110         | -80            | SatelliteStatus.ONLINE   | "Temperature is out of safe range"
         "signal strength too low"    | System.currentTimeMillis()           | 500      | 25          | -100           | SatelliteStatus.ONLINE   | "Signal strength is too low"
-        "satellite is offline"       | System.currentTimeMillis()           | 500      | 25          | -80            | SatelliteStatus.OFFLINE  | "Satellite is not in ONLINE status" // <-- NASZ NOWY TEST!
+        "satellite is offline"       | System.currentTimeMillis()           | 500      | 25          | -80            | SatelliteStatus.OFFLINE  | "Satellite is not in ONLINE status"
 
     }
 
