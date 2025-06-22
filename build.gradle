@@ -37,7 +37,7 @@ task checkVersions {
         Groovy version: $groovyVer
         Java version: $javaVer
         """.stripIndent().trim()
-        def outputFile = file("system-info.txt")
+        def outputFile = file("$buildDir/system-info.txt")
         outputFile.text = output
         println "--- System Info ---"
         println output
