@@ -2,7 +2,7 @@ package com.example.satellite.model
 
 import groovy.transform.ToString
 
-//Obiekt przechowuj¹cy wynik walidacji.
+//Obiekt przechowujÄ…cy wynik walidacji.
 @ToString
 class ValidationResult {
     boolean valid = true

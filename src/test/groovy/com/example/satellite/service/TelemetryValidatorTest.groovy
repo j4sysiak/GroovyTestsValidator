@@ -7,12 +7,12 @@ import com.example.satellite.model.SatelliteStatus
 
 
 // Kompleksowy test dla walidatora napisany w Spocku. 
-// Wykorzystuje pot�ny blok where: do testowania wielu przypadk�w naraz.
+// Wykorzystuje potďż˝ny blok where: do testowania wielu przypadkďż˝w naraz.
 
 class TelemetryValidatorTest extends Specification {
 
     def validator = new TelemetryValidator()
-    
+
     def "should pass validation for a perfect data packet"() {
         given: "a valid telemetry data packet"
         def validData = new TelemetryData(
@@ -20,7 +20,7 @@ class TelemetryValidatorTest extends Specification {
                 altitudeKm: 500,
                 temperatureCelsius: 25,
                 signalStrengthDBm: -80,
-                status: com.example.satellite.model.SatelliteStatus.ONLINE // <-- BRAKUJ�CA LINIA!
+                status: com.example.satellite.model.SatelliteStatus.ONLINE // <-- BRAKUJďż˝CA LINIA!
         )
 
         when: "the data is validated"
@@ -31,7 +31,7 @@ class TelemetryValidatorTest extends Specification {
         result.failureReasons.empty
     }
 
-    @Unroll // Ta adnotacja sprawi, �e ka�dy wiersz z 'where' b�dzie osobnym testem
+    @Unroll // Ta adnotacja sprawi, ďż˝e kaďż˝dy wiersz z 'where' bďż˝dzie osobnym testem
     def "should fail validation for #reason"() {
         given: "a telemetry data packet with an invalid value"
         def data = new TelemetryData(
@@ -58,22 +58,22 @@ class TelemetryValidatorTest extends Specification {
         "temperature too high"       | System.currentTimeMillis()           | 500      | 110         | -80            | SatelliteStatus.ONLINE   | "Temperature is out of safe range"
         "signal strength too low"    | System.currentTimeMillis()           | 500      | 25          | -100           | SatelliteStatus.ONLINE   | "Signal strength is too low"
         "satellite is offline"       | System.currentTimeMillis()           | 500      | 25          | -80            | SatelliteStatus.OFFLINE  | "Satellite is not in ONLINE status" // <-- NASZ NOWY TEST!
-        
+
     }
-    
+
     def "should collect all failure reasons for a multi-failure packet"() {
         given: "a data packet with multiple issues"
         def badData = new TelemetryData(
                 timestamp: System.currentTimeMillis() - 400000, // stary
                 altitudeKm: 100, // za nisko
                 temperatureCelsius: 25,
-                signalStrengthDBm: -100, // za s�aby sygna�
-                status: com.example.satellite.model.SatelliteStatus.ONLINE // <-- BRAKUJ�CA LINIA!
+                signalStrengthDBm: -100, // za sďż˝aby sygnaďż˝
+                status: com.example.satellite.model.SatelliteStatus.ONLINE // <-- BRAKUJďż˝CA LINIA!
         )
-        
+
         when: "the data is validated"
         def result = validator.validate(badData)
-        
+
         then: "the result contains all three failure reasons"
         !result.valid
         result.failureReasons.size() == 3

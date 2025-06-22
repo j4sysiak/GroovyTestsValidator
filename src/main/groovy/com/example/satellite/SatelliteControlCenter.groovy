@@ -4,7 +4,7 @@ import com.example.satellite.model.TelemetryData
 import com.example.satellite.service.TelemetryValidator
 import com.example.satellite.model.SatelliteStatus
 
-// G³ówna klasa aplikacji, która symuluje dzia³anie systemu.
+// G??wna klasa aplikacji, kt?ra symuluje dzia?anie systemu.
 class SatelliteControlCenter {
 
     static void main(String[] args) {
@@ -13,7 +13,7 @@ class SatelliteControlCenter {
         def validator = new TelemetryValidator()
         def now = System.currentTimeMillis()
 
-        // Przygotujmy kilka pakietów danych do testów
+        // Przygotujmy kilka pakiet?w danych do test?w
         def validData = new TelemetryData(
                 satelliteId: 'SAT-001',
                 timestamp: now - 10000, // 10 sekund temu
@@ -36,8 +36,8 @@ class SatelliteControlCenter {
                 satelliteId: 'SAT-003',
                 timestamp: now,
                 altitudeKm: 100.0, // Za nisko
-                temperatureCelsius: 150.0, // Za gor¹co
-                signalStrengthDBm: -100.0, // Za s³aby sygna³
+                temperatureCelsius: 150.0, // Za gor?co
+                signalStrengthDBm: -100.0, // Za s?aby sygna?
                 status: SatelliteStatus.ONLINE // <-- DODANE
         )
 
@@ -47,12 +47,13 @@ class SatelliteControlCenter {
         altitudeKm: 600.0,
         temperatureCelsius: 20.0,
         signalStrengthDBm: -70.0,
-        status: SatelliteStatus.OFFLINE // <-- Ten powinien zostaæ odrzucony!
+        status: SatelliteStatus.OFFLINE // <-- Ten powinien zosta? odrzucony!
         )
         
         def packetsToProcess = [validData, oldData, failingData, offlineData]
         
         // Przetwarzanie danych
+        println "\n--- Processing all data packets ---"
         packetsToProcess.each { data ->
             println "\nProcessing data for: ${data.satelliteId}"
             def result = validator.validate(data)
