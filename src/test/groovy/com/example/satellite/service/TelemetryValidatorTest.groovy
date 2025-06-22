@@ -12,8 +12,6 @@ class TelemetryValidatorTest extends Specification {
 
     def validator = new TelemetryValidator()
 
-
-
     /*test-1*/
     def "should pass validation for a perfect data packet"() {
         given: "a valid telemetry data packet"
@@ -32,8 +30,6 @@ class TelemetryValidatorTest extends Specification {
         result.valid
         result.failureReasons.empty
     }
-
-
 
     /*test-2*/
     @Unroll // Ta adnotacja sprawi, że każdy wiersz z 'where' będzie osobnym testem
@@ -65,7 +61,6 @@ class TelemetryValidatorTest extends Specification {
         "satellite is offline"       | System.currentTimeMillis()           | 500      | 25          | -80            | SatelliteStatus.OFFLINE  | "Satellite is not in ONLINE status"
     }
 
-
     /*test-3*/
     def "should collect all failure reasons for a multi-failure packet"() {
         given: "a data packet with multiple issues"
@@ -74,7 +69,7 @@ class TelemetryValidatorTest extends Specification {
                 altitudeKm: 100, // za nisko
                 temperatureCelsius: 25,
                 signalStrengthDBm: -100, // za slaby sygnal˝
-                status: com.example.satellite.model.SatelliteStatus.ONLINE
+                status: com.example.satellite.model.SatelliteStatus.MAINTENANCE
         )
 
         when: "the data is validated"
@@ -82,9 +77,10 @@ class TelemetryValidatorTest extends Specification {
 
         then: "the result contains all three failure reasons"
         !result.valid
-        result.failureReasons.size() == 3
+        result.failureReasons.size() == 4
         result.failureReasons.contains("Data is outdated")
         result.failureReasons.contains("Altitude is out of operational range")
         result.failureReasons.contains("Signal strength is too low")
+        result.failureReasons.contains("Satellite is not in ONLINE status")
     }
 }
