@@ -2,10 +2,10 @@
 
 plugins {
     id 'groovy'
-    id 'application' // W Gradle 5.x to powinno dzia³aæ bez problemu
+    id 'application' // W Gradle 5.x to powinno dziaï¿½aï¿½ bez problemu
 }
 
-// Ustawienie Javy 8 (ta sk³adnia jest wci¹¿ poprawna)
+// Ustawienie Javy 8 (ta skï¿½adnia jest wciï¿½ï¿½ poprawna)
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
@@ -24,7 +24,7 @@ application {
     mainClassName = 'com.example.satellite.SatelliteControlCenter'
 }
 
-// Nasze dzia³aj¹ce zadanie do sprawdzania wersji
+// Nasze dziaÅ‚ajÄ…ce zadanie do sprawdzania wersji
 task checkVersions {
     group = 'Help'
     description = 'Checks key versions and saves them to a file.'
@@ -37,7 +37,7 @@ task checkVersions {
         Groovy version: $groovyVer
         Java version: $javaVer
         """.stripIndent().trim()
-        def outputFile = file("$buildDir/system-info.txt")
+        def outputFile = file("system-info.txt")
         outputFile.text = output
         println "--- System Info ---"
         println output
