@@ -4,6 +4,7 @@ import com.example.satellite.model.SatelliteStatus
 import com.example.satellite.model.TelemetryData
 import com.example.satellite.model.ValidationResult
 import com.example.satellite.service.TelemetryValidator
+import com.example.satellite.service.ReportGenerator
 
 // Gl?wna klasa aplikacji, kt?ra symuluje dzialanie systemu.
 class SatelliteControlCenter {
@@ -82,31 +83,11 @@ class SatelliteControlCenter {
         println "--- Processing Complete ---"
 
 
-        // --- NOWY KOD: Generowanie raportu ---
-        println "\n--- Validation Report ---"
-        // U?ywamy metody .count() z domkni?ciem, aby policzy? elementy spe?niaj?ce warunek
-        def acceptedCount = validationResults.count { it.valid }
-        def rejectedCount = validationResults.count { !it.valid }
+        // U?ywamy naszej nowej klasy
+        def reportGenerator = new ReportGenerator()
+        def report = reportGenerator
+                .generate(validationResults, packetsToProcess.size())
 
-        println "Total packets processed: ${packetsToProcess.size()}"
-        println "Accepted packets: $acceptedCount"
-        println "Rejected packets: $rejectedCount"
-
-        // Teraz zbierzmy wszystkie powody odrzucenia
-        // 1. .findAll() - filtruje list?, zostawiaj?c tylko odrzucone wyniki
-        // 2. .collectMany() - bierze ka?dy odrzucony wynik i wyci?ga z niego list? powod?w, a nast?pnie sp?aszcza wszystko do jednej, du?ej listy
-        // 3. .unique() - usuwa duplikaty
-        def allFailureReasons = validationResults
-                .findAll { !it.valid }
-                .collectMany { it.failureReasons }
-                .unique()
-
-        if (allFailureReasons) { // Sprawdza, czy lista nie jest pusta
-            println "\nUnique failure reasons found:"
-            allFailureReasons.each { reason ->
-                println " - $reason"
-            }
-        }
-        println "\n--- End of Report ---"
+        println report // Drukujemy gotowy raport
     }
 }
