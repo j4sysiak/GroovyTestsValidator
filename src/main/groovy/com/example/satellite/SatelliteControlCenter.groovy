@@ -3,7 +3,6 @@ package com.example.satellite
 import com.example.satellite.model.SatelliteStatus
 import com.example.satellite.model.TelemetryData
 import com.example.satellite.service.TelemetryValidator
-import com.example.satellite.service.ReportGenerator
 
 // Gl?wna klasa aplikacji, kt?ra symuluje dzialanie systemu.
 class SatelliteControlCenter {
@@ -35,7 +34,7 @@ class SatelliteControlCenter {
         println "--- End of Report ---"
     }
 
-    // Przenie?li?my g??wn? logik? do oddzielnej, publicznej metody
+    // Przenie?li?my g?wwn? logik? do oddzielnej, publicznej metody
     String processAndGenerateReport(List<TelemetryData> packets) {
         def validationResults = packets.collect { validator.validate(it) }
 
@@ -47,7 +46,7 @@ class SatelliteControlCenter {
                 .collectMany { it.failureReasons }
                 .unique()
 
-        // Zamiast drukowa?, budujemy stringa i go zwracamy. To u?atwia testowanie.
+        // Zamiast drukowa?, budujemy stringa i go zwracamy. To ulatwia testowanie.
         def report = new StringBuilder()
         report.append("--- Validation Report ---\n")
         report.append("Total packets processed: ${packets.size()}\n")

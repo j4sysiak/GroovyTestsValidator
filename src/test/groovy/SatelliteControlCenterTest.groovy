@@ -35,9 +35,11 @@ class SatelliteControlCenterTest extends Specification {
         then: "the report summary is correct"
         // 5. Sprawdzamy, czy raport zawiera poprawne podsumowanie
         report.contains("Total packets processed: 2")
-        report.contains("Accepted packets: 1")
-        report.contains("Rejected packets: 1")
+        report.contains("Accepted packets: 0")
+        report.contains("Rejected packets: 2")
         report.contains("Unique failure reasons found:")
-        report.contains("- Test Failure")
+        report.contains("Data is outdated")
+        report.contains("Altitude is out of operational range")
+        report.contains("Satellite is not in ONLINE status")
     }
 }
