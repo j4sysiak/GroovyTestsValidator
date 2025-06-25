@@ -2,92 +2,76 @@ package com.example.satellite
 
 import com.example.satellite.model.SatelliteStatus
 import com.example.satellite.model.TelemetryData
-import com.example.satellite.model.ValidationResult
 import com.example.satellite.service.TelemetryValidator
 import com.example.satellite.service.ReportGenerator
 
 // Gl?wna klasa aplikacji, kt?ra symuluje dzialanie systemu.
 class SatelliteControlCenter {
 
+    // Przechowujemy walidator jako pole
+    private final TelemetryValidator validator
+
+    // Konstruktor, kt?ry pozwala "wstrzykn??" walidator (prawdziwy lub mocka)
+    SatelliteControlCenter(TelemetryValidator validator) {
+        this.validator = validator
+    }
+
+    // Metoda main jest teraz bardzo prosta - tylko uruchamia system
     static void main(String[] args) {
         println "--- Satellite Control Center Initializing ---"
 
+        // 1. Stw?rz zale?no?ci
         def validator = new TelemetryValidator()
-        def now = System.currentTimeMillis()
+        def packetsToProcess = createSamplePackets()
 
-        // Przygotujmy kilka pakiet?w danych do test?w
-        def validData = new TelemetryData(
-                satelliteId: 'SAT-001',
-                timestamp: now - 10000, // 10 sekund temu
-                altitudeKm: 400.0,
-                temperatureCelsius: 25.5,
-                signalStrengthDBm: -75.0,
-                status: SatelliteStatus.OFFLINE // <-- DODANE
-        )
+        // 2. Stw?rz instancj? naszej klasy, wstrzykuj?c zale?no??
+        def controlCenter = new SatelliteControlCenter(validator)
 
-        def oldData = new TelemetryData(
-                satelliteId: 'SAT-002',
-                timestamp: now - (6 * 60 * 1000), // 6 minut temu
-                altitudeKm: 500.0,
-                temperatureCelsius: 30.0,
-                signalStrengthDBm: -80.0,
-                status: SatelliteStatus.ONLINE // <-- DODANE
-        )
+        // 3. Uruchom logik? i pobierz raport
+        def report = controlCenter.processAndGenerateReport(packetsToProcess)
 
-        def failingData = new TelemetryData(
-                satelliteId: 'SAT-003',
-                timestamp: now,
-                altitudeKm: 100.0, // Za nisko
-                temperatureCelsius: 150.0, // Za gor?co
-                signalStrengthDBm: -100.0, // Za s?aby sygna?
-                status: SatelliteStatus.ONLINE // <-- DODANE
-        )
+        // 4. Wy?wietl wynik
+        println(report)
+        println "--- End of Report ---"
+    }
 
-        def offlineData = new TelemetryData(
-                satelliteId: 'SAT-004',
-                timestamp: now,
-                altitudeKm: 600.0,
-                temperatureCelsius: 20.0,
-                signalStrengthDBm: -70.0,
-                status: SatelliteStatus.OFFLINE // <-- Ten powinien zosta? odrzucony!
-        )
-        
-        def packetsToProcess = [validData, oldData, failingData, offlineData]
+    // Przenie?li?my g??wn? logik? do oddzielnej, publicznej metody
+    String processAndGenerateReport(List<TelemetryData> packets) {
+        def validationResults = packets.collect { validator.validate(it) }
 
-        /*
-        // Przetwarzanie danych - 1
-        println "\n--- Processing all data packets ---"
-        packetsToProcess.each { data ->
-            println "\nProcessing data for: ${data.satelliteId}"
-            def result = validator.validate(data)
+        def acceptedCount = validationResults.count { it.valid }
+        def rejectedCount = validationResults.count { !it.valid }
 
-            if (result.valid) {
-                println "--> VALIDATION PASSED. Data accepted."
-            } else {
-                println "--> VALIDATION FAILED. Reasons:"
-                result.failureReasons.each { reason ->
-                    println "    - $reason"
-                }
+        def allFailureReasons = validationResults
+                .findAll { !it.valid }
+                .collectMany { it.failureReasons }
+                .unique()
+
+        // Zamiast drukowa?, budujemy stringa i go zwracamy. To u?atwia testowanie.
+        def report = new StringBuilder()
+        report.append("--- Validation Report ---\n")
+        report.append("Total packets processed: ${packets.size()}\n")
+        report.append("Accepted packets: $acceptedCount\n")
+        report.append("Rejected packets: $rejectedCount\n")
+
+        if (allFailureReasons) {
+            report.append("\nUnique failure reasons found:\n")
+            allFailureReasons.each { reason ->
+                report.append(" - $reason\n")
             }
         }
-        println "\n--- Processing Complete ---"
-        */
 
-        // Przetwarzanie danych - 2
-        println "\n--- Processing all data packets ---"
-        // U?ywamy metody .collect(), aby przetworzy? ka?dy element i zebra? wyniki do nowej listy
-        def validationResults = packetsToProcess.collect { data ->
-            println "Processing data for: ${data.satelliteId}"
-            return validator.validate(data) // Zwracamy wynik walidacji
-        }
-        println "--- Processing Complete ---"
+        return report.toString()
+    }
 
-
-        // U?ywamy naszej nowej klasy
-        def reportGenerator = new ReportGenerator()
-        def report = reportGenerator
-                .generate(validationResults, packetsToProcess.size())
-
-        println report // Drukujemy gotowy raport
+    // Pomocnicza metoda do tworzenia danych, ?eby nie za?mieca? main
+    private static List<TelemetryData> createSamplePackets() {
+        def now = System.currentTimeMillis()
+        return [
+                new TelemetryData(satelliteId: 'SAT-001', status: SatelliteStatus.ONLINE, timestamp: now - 10000, altitudeKm: 400.0, temperatureCelsius: 25.5, signalStrengthDBm: -75.0),
+                new TelemetryData(satelliteId: 'SAT-002', status: SatelliteStatus.ONLINE, timestamp: now - (6 * 60 * 1000), altitudeKm: 500.0, temperatureCelsius: 30.0, signalStrengthDBm: -80.0),
+                new TelemetryData(satelliteId: 'SAT-003', status: SatelliteStatus.ONLINE, timestamp: now, altitudeKm: 100.0, temperatureCelsius: 150.0, signalStrengthDBm: -100.0),
+                new TelemetryData(satelliteId: 'SAT-004', status: SatelliteStatus.OFFLINE, timestamp: now, altitudeKm: 600.0, temperatureCelsius: 20.0, signalStrengthDBm: -70.0)
+        ]
     }
 }
