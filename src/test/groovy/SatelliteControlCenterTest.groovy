@@ -7,7 +7,7 @@ import spock.lang.Specification
 
 class SatelliteControlCenterTest extends Specification {
 
-    // Używamy PRAWDZIWEGO walidatora, a nie mocka
+    // Używamy PRAWDZIWEGO walidatora, a nie mocka (bo mock nie chce dzialać)
     def validator = new TelemetryValidator()
 
     // Nasz obiekt poddawany testom (Subject Under Test)
@@ -20,19 +20,30 @@ class SatelliteControlCenterTest extends Specification {
 
         // Przygotowujemy dane, które będą testować prawdziwą logikę walidatora
         def packet1_valid = new TelemetryData(
-                satelliteId: 'SAT-01', status: SatelliteStatus.ONLINE, timestamp: now,
-                altitudeKm: 500, temperatureCelsius: 25, signalStrengthDBm: -80
+                satelliteId: 'SAT-01',
+                status: SatelliteStatus.ONLINE,
+                timestamp: now,
+                altitudeKm: 500,
+                temperatureCelsius: 25,
+                signalStrengthDBm: -80
         )
 
         def packet2_error = new TelemetryData(
-                satelliteId: 'SAT-02', status: SatelliteStatus.ONLINE, timestamp: now,
+                satelliteId: 'SAT-02',
+                status: SatelliteStatus.ONLINE,
+                timestamp: now,
                 altitudeKm: 100, // BŁĄD
-                temperatureCelsius: 25, signalStrengthDBm: -80
+                temperatureCelsius: 25,
+                signalStrengthDBm: -80
         )
 
         def packet3_warning = new TelemetryData(
-                satelliteId: 'SAT-03', status: SatelliteStatus.ONLINE, timestamp: now,
-                altitudeKm: 500, temperatureCelsius: 25, signalStrengthDBm: -100 // OSTRZEŻENIE
+                satelliteId: 'SAT-03',
+                status: SatelliteStatus.ONLINE,
+                timestamp: now,
+                altitudeKm: 500,
+                temperatureCelsius: 25,
+                signalStrengthDBm: -100 // OSTRZEŻENIE
         )
 
         def packets = [packet1_valid, packet2_error, packet3_warning]
