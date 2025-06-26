@@ -4,6 +4,7 @@ import com.example.satellite.model.TelemetryData
 import spock.lang.Specification
 import spock.lang.Unroll
 import com.example.satellite.model.SatelliteStatus
+import com.example.satellite.model.Severity
 
 // Kompleksowy test dla walidatora napisany w Spocku.
 // Wykorzystuje potężny blok where: do testowania wielu przypadków naraz.
@@ -26,14 +27,14 @@ class TelemetryValidatorTest extends Specification {
         when: "the data is validated"
         def result = validator.validate(validData)
 
-        then: "the validation result is valid"
-        result.valid
-        result.failureReasons.empty
+        then: "the validation result is valid and has no issues"
+        result.valid // Sprawdzamy, czy nie ma żadnych ERRORÓW
+        result.issues.empty // Sprawdzamy, czy lista problemów (też WARNINGów) jest pusta
     }
 
     /*test-2*/
-    @Unroll // Ta adnotacja sprawi, że każdy wiersz z 'where' będzie osobnym testem
-    def "should fail validation for #reason"() {
+    @Unroll
+    def "should report a #severity issue for #reason"() { // Zmieniliśmy nazwę, aby była bardziej opisowa
         given: "a telemetry data packet with an invalid value"
         def data = new TelemetryData(
                 timestamp: timestamp,
@@ -46,41 +47,46 @@ class TelemetryValidatorTest extends Specification {
         when: "the data is validated"
         def result = validator.validate(data)
 
-        then: "the validation fails for the correct reason"
-        !result.valid
-        result.failureReasons.contains(expectedFailure)
+        then: "the validation fails and reports a single issue with the correct severity"
+        !result.valid || severity == Severity.WARNING // Wynik jest nieważny LUB to tylko ostrzeżenie
+
+        result.issues.size() == 1
+        result.issues[0].reason == expectedFailure
+        result.issues[0].severity == severity // Sprawdzamy poziom ważności!
 
         where:
-        reason                       | timestamp                            | altitude | temperature | signalStrength | status                   | expectedFailure
-        "outdated data"              | System.currentTimeMillis() - 400000  | 500      | 25          | -80            | SatelliteStatus.ONLINE   | "Data is outdated"
-        "altitude too low"           | System.currentTimeMillis()           | 100      | 25          | -80            | SatelliteStatus.ONLINE   | "Altitude is out of operational range"
-        "altitude too high"          | System.currentTimeMillis()           | 3000     | 25          | -80            | SatelliteStatus.ONLINE   | "Altitude is out of operational range"
-        "temperature too low"        | System.currentTimeMillis()           | 500      | -60         | -80            | SatelliteStatus.ONLINE   | "Temperature is out of safe range"
-        "temperature too high"       | System.currentTimeMillis()           | 500      | 110         | -80            | SatelliteStatus.ONLINE   | "Temperature is out of safe range"
-        "signal strength too low"    | System.currentTimeMillis()           | 500      | 25          | -100           | SatelliteStatus.ONLINE   | "Signal strength is too low"
-        "satellite is offline"       | System.currentTimeMillis()           | 500      | 25          | -80            | SatelliteStatus.OFFLINE  | "Satellite is not in ONLINE status"
+        reason                    | timestamp                           | altitude | temperature | signalStrength | status                  | severity          | expectedFailure
+        "outdated data"           | System.currentTimeMillis() - 400000 | 500      | 25          | -80            | SatelliteStatus.ONLINE  | Severity.WARNING  | "Data is outdated"
+        "altitude too low"        | System.currentTimeMillis()          | 100      | 25          | -80            | SatelliteStatus.ONLINE  | Severity.ERROR    | "Altitude is out of operational range"
+        "altitude too high"       | System.currentTimeMillis()          | 3000     | 25          | -80            | SatelliteStatus.ONLINE  | Severity.ERROR    | "Altitude is out of operational range"
+        "temperature too low"     | System.currentTimeMillis()          | 500      | -60         | -80            | SatelliteStatus.ONLINE  | Severity.ERROR    | "Temperature is out of safe range"
+        "temperature too high"    | System.currentTimeMillis()          | 500      | 110         | -80            | SatelliteStatus.ONLINE  | Severity.ERROR    | "Temperature is out of safe range"
+        "signal strength too low" | System.currentTimeMillis()          | 500      | 25          | -100           | SatelliteStatus.ONLINE  | Severity.WARNING  | "Signal strength is too low"
+        "satellite is offline"    | System.currentTimeMillis()          | 500      | 25          | -80            | SatelliteStatus.OFFLINE | Severity.ERROR    | "Satellite is not in ONLINE status"
     }
 
     /*test-3*/
-    def "should collect all failure reasons for a multi-failure packet"() {
-        given: "a data packet with multiple issues"
+    def "should collect multiple issues of different severities"() {
+        given: "a data packet with multiple issues (one error and one warning)"
         def badData = new TelemetryData(
-                timestamp: System.currentTimeMillis() - 400000, // stary
-                altitudeKm: 100, // za nisko
+                timestamp: System.currentTimeMillis() - 400000, // to będzie WARNING
+                altitudeKm: 100, // to będzie ERROR
                 temperatureCelsius: 25,
-                signalStrengthDBm: -100, // za slaby sygnal˝
-                status: com.example.satellite.model.SatelliteStatus.MAINTENANCE
+                signalStrengthDBm: -80,
+                status: SatelliteStatus.ONLINE
         )
 
         when: "the data is validated"
         def result = validator.validate(badData)
 
-        then: "the result contains all three failure reasons"
-        !result.valid
-        result.failureReasons.size() == 4
-        result.failureReasons.contains("Data is outdated")
-        result.failureReasons.contains("Altitude is out of operational range")
-        result.failureReasons.contains("Signal strength is too low")
-        result.failureReasons.contains("Satellite is not in ONLINE status")
+        then: "the result is invalid and contains two issues"
+        !result.valid // Jest nieważny, bo zawiera co najmniej jeden ERROR
+        result.issues.size() == 2
+
+        and: "it correctly identifies one error and one warning"
+        result.errors.size() == 1
+        result.warnings.size() == 1
+        result.errors[0].reason == "Altitude is out of operational range"
+        result.warnings[0].reason == "Data is outdated"
     }
 }
