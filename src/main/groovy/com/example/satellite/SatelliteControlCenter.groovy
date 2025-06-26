@@ -2,6 +2,7 @@ package com.example.satellite
 
 import com.example.satellite.model.SatelliteStatus
 import com.example.satellite.model.TelemetryData
+import com.example.satellite.service.ReportGenerator
 import com.example.satellite.service.TelemetryValidator
 
 // Gl?wna klasa aplikacji, kt?ra symuluje dzialanie systemu.
@@ -34,33 +35,16 @@ class SatelliteControlCenter {
         println "--- End of Report ---"
     }
 
-    // Przenie?li?my g?wwn? logik? do oddzielnej, publicznej metody
     String processAndGenerateReport(List<TelemetryData> packets) {
+        // Krok 1: Uruchom walidacj? dla wszystkich pakiet?w
         def validationResults = packets.collect { validator.validate(it) }
 
-        def acceptedCount = validationResults.count { it.valid }
-        def rejectedCount = validationResults.count { !it.valid }
+        // Krok 2: Stw?rz instancj? generatora i przeka? mu wyniki
+        // Generator sam zajmie si? reszt?!
+        def reportGenerator = new ReportGenerator()
+        def report = reportGenerator.generate(validationResults, packets.size())
 
-        def allFailureReasons = validationResults
-                .findAll { !it.valid }
-                .collectMany { it.failureReasons }
-                .unique()
-
-        // Zamiast drukowa?, budujemy stringa i go zwracamy. To ulatwia testowanie.
-        def report = new StringBuilder()
-        report.append("--- Validation Report ---\n")
-        report.append("Total packets processed: ${packets.size()}\n")
-        report.append("Accepted packets: $acceptedCount\n")
-        report.append("Rejected packets: $rejectedCount\n")
-
-        if (allFailureReasons) {
-            report.append("\nUnique failure reasons found:\n")
-            allFailureReasons.each { reason ->
-                report.append(" - $reason\n")
-            }
-        }
-
-        return report.toString()
+        return report
     }
 
     // Pomocnicza metoda do tworzenia danych, ?eby nie za?mieca? main

@@ -5,31 +5,37 @@ import com.example.satellite.model.ValidationResult
 class ReportGenerator {
 
     String generate(List<ValidationResult> validationResults, int totalPackets) {
-        // Używamy .with { ... } aby uniknąć powtarzania 'stringBuilder'
-        def report = new StringBuilder().with {
+        new StringBuilder().with {
+            // Używamy naszych nowych, pomocniczych właściwości
             def acceptedCount = validationResults.count { it.valid }
             def rejectedCount = validationResults.count { !it.valid }
 
-            append "--- Validation Report ---"
-            append "Total packets processed: $totalPackets"
-            append "Accepted packets: $acceptedCount"
-            append "Rejected packets: $rejectedCount"
+            append("--- Validation Report ---\n")
+            append("Total packets processed: $totalPackets\n")
+            append("Accepted (no errors): $acceptedCount\n")
+            append("Rejected (with errors): $rejectedCount\n")
 
-            def allFailureReasons = validationResults
-                    .findAll { !it.valid }
-                    .collectMany { it.failureReasons }
-                    .unique()
+            // Osobno zbieramy błędy i ostrzeżenia
+            def allErrors = validationResults.collectMany { it.errors }.unique { it.reason }
+            def allWarnings = validationResults.collectMany { it.warnings }.unique { it.reason }
 
-            if (allFailureReasons) {
-                append "\nUnique failure reasons found:"
-                allFailureReasons.each { reason ->
-                    append " - $reason"
+            if (allErrors) {
+                append("\nCritical Errors Found:\n")
+                allErrors.each { issue ->
+                    append(" - ${issue.reason}\n")
                 }
             }
-            append "\n--- End of Report ---"
 
-            return it.toString() // .with zwraca to, co jest w ostatniej linii
+            if (allWarnings) {
+                append("\nWarnings Found:\n")
+                allWarnings.each { issue ->
+                    append(" - ${issue.reason}\n")
+                }
+            }
+
+            append("\n--- End of Report ---")
+
+            return it.toString()
         }
-        return report
     }
 }
