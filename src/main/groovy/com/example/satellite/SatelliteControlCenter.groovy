@@ -11,7 +11,7 @@ class SatelliteControlCenter {
     // Przechowujemy walidator jako pole
     private final TelemetryValidator validator
 
-    // Konstruktor, kt?ry pozwala "wstrzykn??" walidator (prawdziwy lub mocka)
+    // Konstruktor, kt?ry pozwala "wstrzykn??" walidator
     SatelliteControlCenter(TelemetryValidator validator) {
         this.validator = validator
     }
