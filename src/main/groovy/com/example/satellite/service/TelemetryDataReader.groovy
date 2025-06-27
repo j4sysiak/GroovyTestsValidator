@@ -6,6 +6,8 @@ import groovy.json.JsonSlurper
 
 class TelemetryDataReader {
 
+
+
     List<TelemetryData> readFromFile(String filePath) {
         try {
             // Wczytujemy plik z zasobów
