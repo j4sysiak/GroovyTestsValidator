@@ -1,6 +1,5 @@
 package com.example.satellite.service
 
-import com.example.satellite.model.SatelliteStatus
 import com.example.satellite.model.TelemetryData
 import com.example.satellite.model.ValidationResult
 import com.example.satellite.model.Severity
