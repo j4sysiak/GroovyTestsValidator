@@ -3,36 +3,52 @@ package com.example.satellite
 import com.example.satellite.model.SatelliteStatus
 import com.example.satellite.model.TelemetryData
 import com.example.satellite.service.ReportGenerator
+import com.example.satellite.service.TelemetryDataReader
 import com.example.satellite.service.TelemetryValidator
 
 // Gl?wna klasa aplikacji, kt?ra symuluje dzialanie systemu.
 class SatelliteControlCenter {
 
-    // Przechowujemy walidator jako pole
     private final TelemetryValidator validator
 
-    // Konstruktor, kt?ry pozwala "wstrzykn??" walidator
     SatelliteControlCenter(TelemetryValidator validator) {
         this.validator = validator
     }
 
-    // Metoda main jest teraz bardzo prosta - tylko uruchamia system
+    // Zmienili?my nazw? metody, aby by?a bardziej adekwatna
+    String generateReportForPackets(List<TelemetryData> packets) {
+        println "\n--- Processing ${packets.size()} data packets ---"
+        def validationResults = packets.collect { validator.validate(it) }
+
+        // Logika generatora raportu jest teraz w osobnej klasie, wi?c jej nie potrzebujemy
+        def reportGenerator = new ReportGenerator()
+        return reportGenerator.generate(validationResults, packets.size())
+    }
+
     static void main(String[] args) {
         println "--- Satellite Control Center Initializing ---"
 
         // 1. Stw?rz zale?no?ci
+        def dataReader = new TelemetryDataReader()
         def validator = new TelemetryValidator()
-        def packetsToProcess = createSamplePackets()
+        def reportGenerator = new ReportGenerator()
+        def controlCenter = new SatelliteControlCenter(validator) // Przekazujemy tylko walidator
 
-        // 2. Stw?rz instancj? naszej klasy, wstrzykuj?c zale?no??
-        def controlCenter = new SatelliteControlCenter(validator)
+        // 2. Wczytaj dane z pliku JSON
+        println "Reading telemetry stream from file..."
+        def packetsToProcess = dataReader.readFromFile('/telemetry-stream.json')
+
+        if (packetsToProcess.empty) {
+            println "No valid data packets to process. Exiting."
+            return
+        }
 
         // 3. Uruchom logik? i pobierz raport
-        def report = controlCenter.processAndGenerateReport(packetsToProcess)
+        // Musimy przekaza? pakiety do metody, kt?ra je przetworzy
+        def report = controlCenter.generateReportForPackets(packetsToProcess) // Zmienimy nazw? metody za chwil?
 
         // 4. Wy?wietl wynik
         println(report)
-        println "--- End of Report ---"
     }
 
     String processAndGenerateReport(List<TelemetryData> packets) {
