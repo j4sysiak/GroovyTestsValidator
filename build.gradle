@@ -13,9 +13,11 @@ repositories {
     mavenCentral()
 }
 
+// build.gradle
 dependencies {
     implementation 'org.codehaus.groovy:groovy-all:2.5.14'
-    implementation 'org.codehaus.groovy:groovy-json:2.5.14' // <-- NOWA ZALEŻNOŚĆ
+    implementation 'org.codehaus.groovy:groovy-json:2.5.14'
+
     testImplementation 'org.spockframework:spock-core:1.3-groovy-2.5'
     testImplementation 'junit:junit:4.13.2'
 }
