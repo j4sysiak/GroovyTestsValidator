@@ -7,6 +7,8 @@ import spock.lang.Specification
 class ReportGeneratorTest extends Specification {
 
 
+
+
     def reportGenerator = new ReportGenerator()
 
     def "should generate a correct report for a mix of valid and invalid results"() {
