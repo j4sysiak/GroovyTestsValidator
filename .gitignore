@@ -1,0 +1,17 @@
+# Pliki i foldery generowane przez IDE
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+nbproject/
+build/
+.gradle/
+
+# Pliki systemowe
+.DS_Store
+Thumbs.db
+
+# Pliki logów i inne artefakty
+*.log
+system-info.txt
