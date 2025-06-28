@@ -6,25 +6,35 @@ import groovy.json.JsonSlurper
 
 class TelemetryDataReader {
 
-
-
     List<TelemetryData> readFromFile(String filePath) {
         try {
-            // Wczytujemy plik z zasob�w
-            def inputFile = getClass().getResource(filePath)
-            if (!inputFile) {
-                throw new FileNotFoundException("Cannot find resource file: $filePath")
+            InputStream inputStream
+
+            // NOWA, INTELIGENTNA LOGIKA
+            def file = new File(filePath)
+            if (file.isAbsolute()) {
+                // Jeśli ścieżka jest bezwzględna (jak w naszych testach), wczytaj ją bezpośrednio z systemu plików
+                println "INFO: Reading from absolute file path: $filePath"
+                if (!file.exists()) {
+                    throw new FileNotFoundException("File not found at absolute path: $filePath")
+                }
+                inputStream = file.newInputStream()
+            } else {
+                // Jeśli ścieżka jest względna (jak w aplikacji '/telemetry-stream.json'), wczytaj ją jako zasób
+                println "INFO: Reading from classpath resource: $filePath"
+                inputStream = getClass().getResourceAsStream(filePath)
+                if (inputStream == null) {
+                    throw new FileNotFoundException("Cannot find resource file: $filePath")
+                }
             }
 
-            // U?ywamy JsonSlurper do sparsowania JSONa
-            def jsonData = new JsonSlurper().parse(inputFile)
+            // Używamy JsonSlurper do sparsowania strumienia danych
+            def jsonData = new JsonSlurper().parse(inputStream)
 
-            // Przekszta?camy list? map z JSONa na list? naszych obiekt�w TelemetryData
+            // Reszta metody pozostaje bez zmian...
             def telemetryPackets = jsonData.collect { dataMap ->
                 try {
-                    // U?ywamy 'as' do bezpiecznej konwersji typu dla enuma
                     def status = dataMap.status as SatelliteStatus
-
                     return new TelemetryData(
                             satelliteId: dataMap.satelliteId,
                             timestamp: dataMap.timestamp,
@@ -34,18 +44,16 @@ class TelemetryDataReader {
                             status: status
                     )
                 } catch (Exception e) {
-                    // Je?li co? p�jdzie nie tak (np. brak pola, z?y typ), zwracamy null
                     println "WARN: Could not parse data record: $dataMap. Reason: ${e.message}"
                     return null
                 }
             }
 
-            // Na ko?cu filtrujemy list?, aby usun?? wszystkie nulle, kt�re powsta?y z b??dnych rekord�w
             return telemetryPackets.findAll { it != null }
 
         } catch (Exception e) {
             println "FATAL: Could not read or parse telemetry file: $filePath. Reason: ${e.message}"
-            return [] // Zwracamy pust? list? w przypadku powa?nego b??du
+            return []
         }
     }
 }
