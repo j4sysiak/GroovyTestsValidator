@@ -1,17 +1,39 @@
 package com.example.satellite.service
 
+import com.example.satellite.model.SatelliteStatus
+import com.example.satellite.model.Severity
 import com.example.satellite.model.TelemetryData
 import spock.lang.Specification
 import spock.lang.Unroll
-import com.example.satellite.model.SatelliteStatus
-import com.example.satellite.model.Severity
-
-// Kompleksowy test dla walidatora napisany w Spocku.
-// Wykorzystuje potężny blok where: do testowania wielu przypadków naraz.
 
 class TelemetryValidatorTest extends Specification {
 
-    def validator = new TelemetryValidator()
+// Deklarujemy pola, które będą dostępne we wszystkich testach
+    ValidatorConfig testConfig
+    TelemetryValidator validator
+
+    // Metoda setup() jest uruchamiana przed każdą metodą testową
+    def setup() {
+        // Tworzymy obiekt Properties bezpośrednio w teście
+        def props = new Properties()
+        props.setProperty('validation.data.max_age_ms', '300000')
+        props.setProperty('validation.altitude.min_km', '160.0')
+        props.setProperty('validation.altitude.max_km', '2000.0')
+        props.setProperty('validation.temp.min_c', '-50.0')
+        props.setProperty('validation.temp.max_c', '100.0')
+        props.setProperty('validation.signal.min_dbm', '-90.0')
+
+        // Używamy naszego nowego konstruktora
+        testConfig = new ValidatorConfig(props)
+        validator = new TelemetryValidator(testConfig)
+    }
+
+    // Wszystkie stare testy powinny teraz działać bez zmian,
+    // ponieważ używają one obiektu 'validator', który jest tworzony
+    // w metodzie setup() z kontrolowaną przez nas konfiguracją.
+
+    // Kompleksowy test dla walidatora napisany w Spocku.
+    // Wykorzystuje potężny blok where: do testowania wielu przypadków naraz.
 
     /*test-1*/
     def "should pass validation for a perfect data packet"() {

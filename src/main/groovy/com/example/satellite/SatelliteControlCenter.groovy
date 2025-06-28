@@ -7,6 +7,7 @@ import com.example.satellite.service.CommandIssuer
 import com.example.satellite.service.ReportGenerator
 import com.example.satellite.service.TelemetryDataReader
 import com.example.satellite.service.TelemetryValidator
+import com.example.satellite.service.ValidatorConfig
 
 // Glówna klasa aplikacji, kt?ra symuluje dzialanie systemu.
 class SatelliteControlCenter {
@@ -17,7 +18,35 @@ class SatelliteControlCenter {
         this.validator = validator
     }
 
-// W klasie SatelliteControlCenter
+
+
+    static void main(String[] args) {
+        println "--- Satellite Control Center Initializing ---"
+
+        // 1. Stwórz zależności, zaczynając od konfiguracji
+        def config = new ValidatorConfig('/validator.properties') // Wczytujemy plik z zasobów
+        def validator = new TelemetryValidator(config) // Przekazujemy konfigurację do walidatora
+
+        def dataReader = new TelemetryDataReader()
+        def controlCenter = new SatelliteControlCenter(validator)
+
+        // 2. Wczytaj dane z pliku JSON
+        println "Reading telemetry stream from file..."
+        def packetsToProcess = dataReader.readFromFile('/telemetry-stream.json')
+
+        if (packetsToProcess.empty) {
+            println "No valid data packets to process. Exiting."
+            return
+        }
+
+        // 3. Uruchom logikę i pobierz decyzje
+        def decisions = controlCenter.processPacketsAndDecideCommands(packetsToProcess)
+
+        // 4. Wyświetl wynik
+        println "\n--- Action Decisions ---"
+        decisions.each { println it }
+        println "----------------------"
+    }
 
     List<ActionDecision> processPacketsAndDecideCommands(List<TelemetryData> packets) {
         println "\n--- Processing ${packets.size()} data packets ---"
@@ -53,33 +82,6 @@ class SatelliteControlCenter {
                 }
 
         return decisionsBySatellite
-    }
-
-    static void main(String[] args) {
-        println "--- Satellite Control Center Initializing ---"
-
-        // 1. Stwórz zależno?ci
-        def dataReader = new TelemetryDataReader()
-        def validator = new TelemetryValidator()
-        def reportGenerator = new ReportGenerator()
-        def controlCenter = new SatelliteControlCenter(validator) // Przekazujemy tylko walidator
-
-        // 2. Wczytaj dane z pliku JSON
-        println "Reading telemetry stream from file..."
-        def packetsToProcess = dataReader.readFromFile('/telemetry-stream.json')
-
-        if (packetsToProcess.empty) {
-            println "No valid data packets to process. Exiting."
-            return
-        }
-
-        // 3. Uruchom logikę i pobierz decyzje
-        def decisions = controlCenter.processPacketsAndDecideCommands(packetsToProcess)
-
-        // 4. Wyświetl wynik
-        println "\n--- Action Decisions ---"
-        decisions.each { println it }
-        println "----------------------"
     }
 
     String processAndGenerateReport(List<TelemetryData> packets) {
