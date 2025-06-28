@@ -1,12 +1,14 @@
 package com.example.satellite
 
+import com.example.satellite.model.ActionDecision
 import com.example.satellite.model.SatelliteStatus
 import com.example.satellite.model.TelemetryData
+import com.example.satellite.service.CommandIssuer
 import com.example.satellite.service.ReportGenerator
 import com.example.satellite.service.TelemetryDataReader
 import com.example.satellite.service.TelemetryValidator
 
-// Gl?wna klasa aplikacji, kt?ra symuluje dzialanie systemu.
+// Glówna klasa aplikacji, kt?ra symuluje dzialanie systemu.
 class SatelliteControlCenter {
 
     private final TelemetryValidator validator
@@ -15,20 +17,48 @@ class SatelliteControlCenter {
         this.validator = validator
     }
 
-    // Zmienili?my nazw? metody, aby by?a bardziej adekwatna
-    String generateReportForPackets(List<TelemetryData> packets) {
-        println "\n--- Processing ${packets.size()} data packets ---"
-        def validationResults = packets.collect { validator.validate(it) }
+// W klasie SatelliteControlCenter
 
-        // Logika generatora raportu jest teraz w osobnej klasie, wi?c jej nie potrzebujemy
-        def reportGenerator = new ReportGenerator()
-        return reportGenerator.generate(validationResults, packets.size())
+    List<ActionDecision> processPacketsAndDecideCommands(List<TelemetryData> packets) {
+        println "\n--- Processing ${packets.size()} data packets ---"
+
+        // To jest serce przetwarzania strumieniowego w Groovy!
+        def decisions = packets
+        // Krok 1: Waliduj każdy pakiet
+                .collect { validator.validate(it) }
+        // Krok 2: Odrzuć puste wyniki (na wszelki wypadek)
+                .findAll { it != null }
+        // Krok 3: Zbierz wszystkie problemy (błędy i ostrzeżenia) do jednej listy
+                .collectMany { it.issues }
+        // Krok 4: Pogrupuj problemy według ID satelity, z którego pochodzą
+        // Niestety, musimy wrócić do danych wejściowych, żeby to zrobić. Uprośćmy to.
+        // Poniżej lepsze podejście.
+
+        // Lepsze podejście:
+        // Najpierw grupujemy pakiety, potem walidujemy i decydujemy dla każdej grupy.
+        def commandIssuer = new CommandIssuer()
+
+        def decisionsBySatellite = packets
+        // Krok 1: Grupujemy pakiety po ID satelity. Wynikiem jest mapa [ID -> ListaPakietów]
+                .groupBy { it.satelliteId }
+        // Krok 2: Przechodzimy przez każdą parę (ID, ListaPakietów) w mapie
+                .collect { satelliteId, satellitePackets ->
+                    // Krok 3: Dla danego satelity, zbieramy WSZYSTKIE problemy ze wszystkich jego pakietów
+                    def allIssuesForSatellite = satellitePackets
+                            .collect { validator.validate(it) }
+                            .collectMany { it.issues }
+
+                    // Krok 4: Podejmujemy JEDNĄ decyzję dla satelity na podstawie wszystkich jego problemów
+                    return commandIssuer.decideCommand(satelliteId, allIssuesForSatellite)
+                }
+
+        return decisionsBySatellite
     }
 
     static void main(String[] args) {
         println "--- Satellite Control Center Initializing ---"
 
-        // 1. Stw?rz zale?no?ci
+        // 1. Stwórz zależno?ci
         def dataReader = new TelemetryDataReader()
         def validator = new TelemetryValidator()
         def reportGenerator = new ReportGenerator()
@@ -43,12 +73,13 @@ class SatelliteControlCenter {
             return
         }
 
-        // 3. Uruchom logik? i pobierz raport
-        // Musimy przekaza? pakiety do metody, kt?ra je przetworzy
-        def report = controlCenter.generateReportForPackets(packetsToProcess) // Zmienimy nazw? metody za chwil?
+        // 3. Uruchom logikę i pobierz decyzje
+        def decisions = controlCenter.processPacketsAndDecideCommands(packetsToProcess)
 
-        // 4. Wy?wietl wynik
-        println(report)
+        // 4. Wyświetl wynik
+        println "\n--- Action Decisions ---"
+        decisions.each { println it }
+        println "----------------------"
     }
 
     String processAndGenerateReport(List<TelemetryData> packets) {
