@@ -1,45 +1,45 @@
-package com.example.satellite
+package com.example.auto
 
-import com.example.satellite.model.SatelliteStatus // <-- DODAJ TĘ LINIĘ
-import com.example.satellite.model.TelemetryData
-import com.example.satellite.service.TelemetryValidator
+import com.example.auto.model.AutoStatus // <-- DODAJ TĘ LINIĘ
+import com.example.auto.model.DownloadData
+import com.example.auto.service.DownloadValidator
 import spock.lang.Specification
 
-class SatelliteControlCenterTest extends Specification {
+class AutoControlCenterTest extends Specification {
 
     // Używamy PRAWDZIWEGO walidatora, a nie mocka (bo mock nie chce dzialać)
-    def validator = new TelemetryValidator()
+    def validator = new DownloadValidator()
 
     // Nasz obiekt poddawany testom (Subject Under Test)
     // Wstrzykujemy do niego mocka
-    def controlCenter = new SatelliteControlCenter(validator)
+    def controlCenter = new AutoControlCenter(validator)
 
     def "should generate correct report for a mix of valid and invalid data"() {
         given: "a list of data packets with various issues"
         def now = System.currentTimeMillis()
 
         // Przygotowujemy dane, które będą testować prawdziwą logikę walidatora
-        def packet1_valid = new TelemetryData(
-                satelliteId: 'SAT-01',
-                status: SatelliteStatus.ONLINE,
+        def packet1_valid = new DownloadData(
+                autoId: 'AUTO-01',
+                status: AutoStatus.ONLINE,
                 timestamp: now,
                 altitudeKm: 500,
                 temperatureCelsius: 25,
                 signalStrengthDBm: -80
         )
 
-        def packet2_error = new TelemetryData(
-                satelliteId: 'SAT-02',
-                status: SatelliteStatus.ONLINE,
+        def packet2_error = new DownloadData(
+                autoId: 'AUTO-02',
+                status: AutoStatus.ONLINE,
                 timestamp: now,
                 altitudeKm: 100, // BŁĄD
                 temperatureCelsius: 25,
                 signalStrengthDBm: -80
         )
 
-        def packet3_warning = new TelemetryData(
-                satelliteId: 'SAT-03',
-                status: SatelliteStatus.ONLINE,
+        def packet3_warning = new DownloadData(
+                autoId: 'AUTO-03',
+                status: AutoStatus.ONLINE,
                 timestamp: now,
                 altitudeKm: 500,
                 temperatureCelsius: 25,

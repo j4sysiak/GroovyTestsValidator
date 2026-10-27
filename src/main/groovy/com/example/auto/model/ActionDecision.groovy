@@ -1,10 +1,10 @@
-package com.example.satellite.model
+package com.example.auto.model
 
 import groovy.transform.ToString
 
 @ToString
 class ActionDecision {
-    String satelliteId
+    String autoId
     Command command
     String justification // Uzasadnienie, dlaczego podjęto taką decyzję
 }

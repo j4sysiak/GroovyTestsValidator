@@ -1,11 +1,11 @@
-package com.example.satellite.service
+package com.example.auto.service
 
 import spock.lang.Specification
 import spock.lang.TempDir
 
-class TelemetryDataReaderTest extends Specification {
+class DownloadDataReaderTest extends Specification {
 
-    def dataReader = new TelemetryDataReader()
+    def dataReader = new DownloadDataReader()
 
     @TempDir
     File tempDir
@@ -15,7 +15,7 @@ class TelemetryDataReaderTest extends Specification {
         def validJson = """
         [
           {
-            "satelliteId": "SAT-VALID",
+            "autoId": "AUTO-VALID",
             "timestamp": 1672531200000,
             "altitudeKm": 450.5,
             "temperatureCelsius": 22.7,
@@ -30,12 +30,12 @@ class TelemetryDataReaderTest extends Specification {
         when: "the data reader reads the file"
         def result = dataReader.readFromFile(testFile.absolutePath)
 
-        then: "it returns a list with one valid TelemetryData object"
+        then: "it returns a list with one valid DownloadyData object"
         result.size() == 1
 
         and: "the data in the object is correct"
         def dataObject = result[0]
-        dataObject.satelliteId == "SAT-VALID"
+        dataObject.autoId == "AUTO-VALID"
         dataObject.altitudeKm == 450.5
         dataObject.status.toString() == "ONLINE"
     }
@@ -44,9 +44,9 @@ class TelemetryDataReaderTest extends Specification {
         given: "a file with a mix of good and bad data"
         def mixedJson = """
         [
-          { "satelliteId": "GOOD-1", "timestamp": 1, "altitudeKm": 200, "temperatureCelsius": 20, "signalStrengthDBm": -80, "status": "ONLINE" },
-          { "satelliteId": "BAD-1 (missing altitude)" },
-          { "satelliteId": "GOOD-2", "timestamp": 2, "altitudeKm": 300, "temperatureCelsius": 25, "signalStrengthDBm": -70, "status": "ONLINE" }
+          { "autoId": "GOOD-1", "timestamp": 1, "altitudeKm": 200, "temperatureCelsius": 20, "signalStrengthDBm": -80, "status": "ONLINE" },
+          { "autoId": "BAD-1 (missing altitude)" },
+          { "autoId": "GOOD-2", "timestamp": 2, "altitudeKm": 300, "temperatureCelsius": 25, "signalStrengthDBm": -70, "status": "ONLINE" }
         ]
         """
         def testFile = new File(tempDir, "mixed-data.json")
@@ -57,8 +57,8 @@ class TelemetryDataReaderTest extends Specification {
 
         then: "it returns a list containing only the two valid records"
         result.size() == 2
-        result.any { it.satelliteId == "GOOD-1" }
-        result.any { it.satelliteId == "GOOD-2" }
+        result.any { it.autoId == "GOOD-1" }
+        result.any { it.autoId == "GOOD-2" }
     }
 
     def "should return an empty list if the file does not exist"() {

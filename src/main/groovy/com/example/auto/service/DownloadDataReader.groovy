@@ -1,12 +1,12 @@
-package com.example.satellite.service
+package com.example.auto.service
 
-import com.example.satellite.model.SatelliteStatus
-import com.example.satellite.model.TelemetryData
+import com.example.auto.model.AutoStatus
+import com.example.auto.model.DownloadData
 import groovy.json.JsonSlurper
 
-class TelemetryDataReader {
+class DownloadDataReader {
 
-    List<TelemetryData> readFromFile(String filePath) {
+    List<DownloadData> readFromFile(String filePath) {
         try {
             InputStream inputStream
 
@@ -20,7 +20,7 @@ class TelemetryDataReader {
                 }
                 inputStream = file.newInputStream()
             } else {
-                // Jeśli ścieżka jest względna (jak w aplikacji '/telemetry-stream.json'), wczytaj ją jako zasób
+                // Jeśli ścieżka jest względna (jak w aplikacji '/download-stream.json'), wczytaj ją jako zasób
                 println "INFO: Reading from classpath resource: $filePath"
                 inputStream = getClass().getResourceAsStream(filePath)
                 if (inputStream == null) {
@@ -32,11 +32,11 @@ class TelemetryDataReader {
             def jsonData = new JsonSlurper().parse(inputStream)
 
             // Reszta metody pozostaje bez zmian...
-            def telemetryPackets = jsonData.collect { dataMap ->
+            def downloadPackets = jsonData.collect { dataMap ->
                 try {
-                    def status = dataMap.status as SatelliteStatus
-                    return new TelemetryData(
-                            satelliteId: dataMap.satelliteId,
+                    def status = dataMap.status as AutoStatus
+                    return new DownloadData(
+                            autoId: dataMap.autoId,
                             timestamp: dataMap.timestamp,
                             altitudeKm: dataMap.altitudeKm,
                             temperatureCelsius: dataMap.temperatureCelsius,
@@ -49,10 +49,10 @@ class TelemetryDataReader {
                 }
             }
 
-            return telemetryPackets.findAll { it != null }
+            return downloadPackets.findAll { it != null }
 
         } catch (Exception e) {
-            println "FATAL: Could not read or parse telemetry file: $filePath. Reason: ${e.message}"
+            println "FATAL: Could not read or parse download file: $filePath. Reason: ${e.message}"
             return []
         }
     }

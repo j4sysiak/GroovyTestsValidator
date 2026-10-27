@@ -1,11 +1,12 @@
-package com.example.satellite.service
+package com.example.auto.service
 
-import com.example.satellite.model.TelemetryData
-import com.example.satellite.model.ValidationResult
-import com.example.satellite.model.Severity
+import com.example.auto.model.AutoStatus
+import com.example.auto.model.DownloadData
+import com.example.auto.model.ValidationResult
+import com.example.auto.model.Severity
 
 //  Serce systemu logika walidacji danych.
-class TelemetryValidator {
+class DownloadValidator {
 
     // Definicja stalych walidacyjnych
     static final long MAX_DATA_AGE_MS = 5 * 60 * 1000 // 5 minut
@@ -15,7 +16,7 @@ class TelemetryValidator {
     static final double MAX_TEMP_C = 100.0
     static final double MIN_SIGNAL_DBM = -90.0
 
-    ValidationResult validate(TelemetryData data) {
+    ValidationResult validate(DownloadData data) {
         def result = new ValidationResult()
         def currentTime = System.currentTimeMillis()
 
@@ -40,8 +41,8 @@ class TelemetryValidator {
         }
 
         // 5. Sprawdź status operacyjny (to jest ERROR)
-        if (data.status != com.example.satellite.model.SatelliteStatus.ONLINE) {
-            result.addIssue("Satellite is not in ONLINE status", Severity.ERROR)
+        if (data.status != AutoStatus.ONLINE) {
+            result.addIssue("Auto is not in ONLINE status", Severity.ERROR)
         }
 
         return result

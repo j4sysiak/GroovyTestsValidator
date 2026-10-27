@@ -1,8 +1,8 @@
-package com.example.satellite.service
+package com.example.auto.service
 
-import com.example.satellite.model.Command
-import com.example.satellite.model.Severity
-import com.example.satellite.model.ValidationIssue
+import com.example.auto.model.Command
+import com.example.auto.model.Severity
+import com.example.auto.model.ValidationIssue
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -15,7 +15,7 @@ class CommandIssuerTest extends Specification {
         def issues = []
 
         when: "a command is decided"
-        def decision = commandIssuer.decideCommand("SAT-01", issues)
+        def decision = commandIssuer.decideCommand("AUTO-01", issues)
 
         then: "the command is to continue normal operation"
         decision.command == Command.CONTINUE_NORMAL_OPERATION
@@ -27,7 +27,7 @@ class CommandIssuerTest extends Specification {
         def issues = [new ValidationIssue(reason: reason, severity: Severity.ERROR)]
 
         when: "a command is decided"
-        def decision = commandIssuer.decideCommand("SAT-01", issues)
+        def decision = commandIssuer.decideCommand("AUTO-01", issues)
 
         then: "the correct critical command is issued"
         decision.command == expectedCommand
@@ -36,7 +36,7 @@ class CommandIssuerTest extends Specification {
         reason                               | expectedCommand
         "Altitude is out of range"           | Command.ADJUST_ORBIT
         "Temperature is too high"            | Command.REBOOT_SYSTEM
-        "Satellite is not in ONLINE status"  | Command.REBOOT_SYSTEM
+        "Auto is not in ONLINE status"       | Command.REBOOT_SYSTEM
     }
 
     def "should issue IGNORE_WARNINGS when there are only warnings"() {
@@ -47,7 +47,7 @@ class CommandIssuerTest extends Specification {
         ]
 
         when: "a command is decided"
-        def decision = commandIssuer.decideCommand("SAT-01", issues)
+        def decision = commandIssuer.decideCommand("AUTO-01", issues)
 
         then: "the command is to ignore warnings"
         decision.command == Command.IGNORE_WARNINGS
@@ -61,7 +61,7 @@ class CommandIssuerTest extends Specification {
         ]
 
         when: "a command is decided"
-        def decision = commandIssuer.decideCommand("SAT-01", issues)
+        def decision = commandIssuer.decideCommand("AUTO-01", issues)
 
         then: "the command is based on the critical error"
         decision.command == Command.ADJUST_ORBIT

@@ -1,4 +1,4 @@
-package com.example.satellite.model
+package com.example.auto.model
 
 import groovy.transform.ToString
 

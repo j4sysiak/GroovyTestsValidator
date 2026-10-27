@@ -1,7 +1,7 @@
-package com.example.satellite.service
+package com.example.auto.service
 
-import com.example.satellite.model.Severity
-import com.example.satellite.model.ValidationResult
+import com.example.auto.model.Severity
+import com.example.auto.model.ValidationResult
 import spock.lang.Specification
 
 class ReportGeneratorTest extends Specification {

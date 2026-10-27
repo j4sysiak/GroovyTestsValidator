@@ -27,7 +27,7 @@ dependencies {
 }
 
 application {
-    mainClass = 'com.example.satellite.SatelliteControlCenter'
+    mainClass = 'com.example.auto.AutoControlCenter'
 }
 
 tasks.named('test') {

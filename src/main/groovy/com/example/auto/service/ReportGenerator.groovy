@@ -1,6 +1,6 @@
-package com.example.satellite.service
+package com.example.auto.service
 
-import com.example.satellite.model.ValidationResult
+import com.example.auto.model.ValidationResult
 
 class ReportGenerator {
 
