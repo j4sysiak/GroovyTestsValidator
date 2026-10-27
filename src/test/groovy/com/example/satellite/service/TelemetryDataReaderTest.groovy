@@ -1,19 +1,14 @@
 package com.example.satellite.service
 
-// Importujemy potrzebne klasy z biblioteki JUnit, któr? ju? mamy
-import org.junit.Rule
-import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
+import spock.lang.TempDir
 
 class TelemetryDataReaderTest extends Specification {
 
-    // Nasz obiekt poddawany testom
     def dataReader = new TelemetryDataReader()
 
-    // Zamiast @TempDir, u?ywamy standardowej regu?y @Rule z JUnit 4.
-    // Spock wie, jak j? obs?u?y?.
-    @Rule
-    TemporaryFolder tempDir = new TemporaryFolder()
+    @TempDir
+    File tempDir
 
     def "should correctly read and parse a valid JSON file"() {
         given: "a temporary file with valid JSON content"
@@ -29,12 +24,10 @@ class TelemetryDataReaderTest extends Specification {
           }
         ]
         """
-        // Zamiast tworzy? plik new File(tempDir, ...), u?ywamy metody z obiektu regu?y.
-        def testFile = tempDir.newFile("good-data.json")
+        def testFile = new File(tempDir, "good-data.json")
         testFile.text = validJson
 
         when: "the data reader reads the file"
-        // Przekazujemy ?cie?k? do naszego tymczasowego pliku
         def result = dataReader.readFromFile(testFile.absolutePath)
 
         then: "it returns a list with one valid TelemetryData object"
@@ -56,7 +49,7 @@ class TelemetryDataReaderTest extends Specification {
           { "satelliteId": "GOOD-2", "timestamp": 2, "altitudeKm": 300, "temperatureCelsius": 25, "signalStrengthDBm": -70, "status": "ONLINE" }
         ]
         """
-        def testFile = tempDir.newFile("mixed-data.json")
+        def testFile = new File(tempDir, "mixed-data.json")
         testFile.text = mixedJson
 
         when: "the reader processes the file"
@@ -70,8 +63,7 @@ class TelemetryDataReaderTest extends Specification {
 
     def "should return an empty list if the file does not exist"() {
         given: "a path to a non-existent file"
-        // U?ywamy obiektu regu?y, aby stworzy? ?cie?k?, która na pewno nie istnieje
-        def nonExistentPath = new File(tempDir.getRoot(), "non/existent/file.json").absolutePath
+        def nonExistentPath = new File(tempDir, "non/existent/file.json").absolutePath
 
         when: "the reader tries to read the file"
         def result = dataReader.readFromFile(nonExistentPath)

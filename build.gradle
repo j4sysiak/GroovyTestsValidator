@@ -1,46 +1,51 @@
-// Ostateczna, czysta wersja dla Gradle 5.x i Java 8
-
 plugins {
     id 'groovy'
-    id 'application' // W Gradle 5.x to powinno dzia�a� bez problemu
+    id 'application'
 }
 
-// Ustawienie Javy 8 (ta sk�adnia jest wci�� poprawna)
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+ext {
+    groovyVersion = '4.0.29'
+    spockVersion = '2.4-groovy-4.0'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
 
 repositories {
     mavenCentral()
 }
 
-// build.gradle
 dependencies {
-    implementation 'org.codehaus.groovy:groovy-all:2.5.14'
-    implementation 'org.codehaus.groovy:groovy-json:2.5.14'
+    implementation "org.apache.groovy:groovy:${groovyVersion}"
+    implementation "org.apache.groovy:groovy-json:${groovyVersion}"
 
-    testImplementation 'org.spockframework:spock-core:1.3-groovy-2.5'
-    testImplementation 'junit:junit:4.13.2'
+    testImplementation "org.spockframework:spock-core:${spockVersion}"
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
-// Wracamy do standardowego, czystego bloku konfiguracyjnego
 application {
-    mainClassName = 'com.example.satellite.SatelliteControlCenter'
+    mainClass = 'com.example.satellite.SatelliteControlCenter'
 }
 
-// Nasze działające zadanie do sprawdzania wersji
-task checkVersions {
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+tasks.register('checkVersions') {
     group = 'Help'
     description = 'Checks key versions and saves them to a file.'
     doLast {
-        def spockVer = "1.3-groovy-2.5 (from dependencies section)"
-        def groovyVer = GroovySystem.version
-        def javaVer = System.getProperty("java.version")
         def output = """
-        Spock version: $spockVer
-        Groovy version: $groovyVer
-        Java version: $javaVer
+        Gradle version: ${gradle.gradleVersion}
+        Spock version: ${spockVersion}
+        Groovy version: ${groovyVersion}
+        Java toolchain version: ${java.toolchain.languageVersion.get()}
+        Gradle runtime Java version: ${System.getProperty('java.version')}
         """.stripIndent().trim()
-        def outputFile = file("$buildDir/system-info.txt")
+        def outputFile = layout.buildDirectory.file('system-info.txt').get().asFile
         outputFile.text = output
         println "--- System Info ---"
         println output
